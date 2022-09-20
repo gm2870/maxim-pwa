@@ -1,12 +1,11 @@
-var STATIC_CACHE_NAME = "static-v2";
+var STATIC_CACHE_NAME = "static-v4";
 var DYNAMIC_CACHE_NAME ="dynamic-v2"
 self.addEventListener('install', event => {
-    console.log('installing service worker',event);
     event.waitUntil((caches.open(STATIC_CACHE_NAME)).then(function (cache) {
-        console.log('precaching');
         cache.addAll([
             '/',
             '/index.html',
+            '/offline.html',
             '/src/js/app.js',
             '/src/js/feed.js',
             '/src/js/fetch.js',
@@ -23,7 +22,6 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate',event => {
-    console.log('activating service worker',event);
     event.waitUntil(caches.keys().then(function(keyList){
         return Promise.all(keyList.map(function(key) {
             if(key !== STATIC_CACHE_NAME && key !== DYNAMIC_CACHE_NAME) {
@@ -46,7 +44,7 @@ self.addEventListener('fetch',event => {
                         return res;
                     });
                 }).catch(function (err) {
-                    
+                   return caches.open(STATIC_CACHE_NAME).then((cache) => cache.match('/offline.html'))
                 });
             }
         })
